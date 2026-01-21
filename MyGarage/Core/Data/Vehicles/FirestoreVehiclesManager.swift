@@ -9,6 +9,8 @@ import Foundation
 import FirebaseFirestore
 
 final class FirestoreVehiclesManager: VehiclesDataProvider {
+  
+    
     private let db = Firestore.firestore()
 
     private func vehiclesCollection(userId: String) -> CollectionReference {
@@ -104,6 +106,55 @@ final class FirestoreVehiclesManager: VehiclesDataProvider {
             .document(vehicleId)
             .delete()
     }
+    func fetchVehicle(userId: String, vehicleId: String) async throws -> Vehicle {
+        let doc = try await vehiclesCollection(userId: userId)
+            .document(vehicleId)
+            .getDocument()
+
+        guard let data = doc.data() else {
+            throw NSError(domain: "FirestoreVehiclesManager",
+                          code: 404,
+                          userInfo: [NSLocalizedDescriptionKey: "Vehicle not found"])
+        }
+
+        guard
+            let make = data["make"] as? String,
+            let model = data["model"] as? String
+        else {
+            throw NSError(domain: "FirestoreVehiclesManager",
+                          code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid vehicle data"])
+        }
+
+        let year = (data["year"] as? Int) ?? (data["year"] as? NSNumber)?.intValue
+        let mileage = (data["mileage"] as? Int) ?? (data["mileage"] as? NSNumber)?.intValue
+
+        guard let year, let mileage else {
+            throw NSError(domain: "FirestoreVehiclesManager",
+                          code: 400,
+                          userInfo: [NSLocalizedDescriptionKey: "Invalid year/mileage"])
+        }
+
+        let imageURL = data["imageURL"] as? String
+
+        let createdAt: Date
+        if let ts = data["createdAt"] as? Timestamp {
+            createdAt = ts.dateValue()
+        } else {
+            createdAt = Date()
+        }
+
+        return Vehicle(
+            id: doc.documentID,
+            make: make,
+            model: model,
+            year: year,
+            mileage: mileage,
+            imageURL: imageURL,
+            createdAt: createdAt
+        )
+    }
+
 }
 
 private final class ListenerToken: AnyCancellableToken {

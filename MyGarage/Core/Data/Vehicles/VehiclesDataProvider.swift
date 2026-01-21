@@ -14,6 +14,8 @@ protocol VehiclesDataProvider {
     func deleteVehicle(userId: String, vehicleId: String) async throws
     func createVehicle(userId: String, vehicle: Vehicle) async throws
     func updateVehicle(userId: String, vehicle: Vehicle) async throws
+    func fetchVehicle(userId: String, vehicleId: String) async throws -> Vehicle
+
 }
 
 protocol AnyCancellableToken {

@@ -16,7 +16,6 @@ final class VehiclesContainerViewController: UIViewController {
         self.provider = provider
         self.viewModel = VehiclesViewModel(provider: provider)
         super.init(nibName: nil, bundle: nil)
-        title = "Garage"
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
