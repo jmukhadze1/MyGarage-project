@@ -52,11 +52,14 @@ final class LoginViewController: UIViewController {
         Auth.auth().signIn(withEmail: email, password: pass) { [weak self] _, error in
             if let error = error as NSError? {
                 let code = AuthErrorCode(rawValue: error.code)
-                print("🔥 FirebaseAuth error:", error.code, code?.errorMessage ?? "-", error.localizedDescription)
+                print(" FirebaseAuth error:", error.code, code?.errorMessage ?? "-", error.localizedDescription)
                 self?.showError(error.localizedDescription)
+            } else {
+                self?.navigationController?.popViewController(animated: true)
             }
         }
     }
+
 
 
     private func goToForgotPassword() {

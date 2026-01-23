@@ -21,9 +21,8 @@ final class MainTabBarController: UITabBarController {
             tag: 0
         )
 
-        let serviceVC = UIViewController()
-        serviceVC.view.backgroundColor = .systemBackground
-        serviceVC.title = "Service"
+        let servicesProvider = FirestoreServicesManager()
+        let serviceVC = ServicesContainerViewController(provider: servicesProvider)
         let serviceNav = UINavigationController(rootViewController: serviceVC)
         serviceNav.tabBarItem = UITabBarItem(
             title: "Service",
