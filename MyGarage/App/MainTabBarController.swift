@@ -22,13 +22,18 @@ final class MainTabBarController: UITabBarController {
         )
 
         let servicesProvider = FirestoreServicesManager()
-        let serviceVC = ServicesContainerViewController(provider: servicesProvider)
+        let serviceVC = ServicesContainerViewController(
+            provider: servicesProvider,
+            vehiclesProvider: vehiclesProvider
+        )
+
         let serviceNav = UINavigationController(rootViewController: serviceVC)
         serviceNav.tabBarItem = UITabBarItem(
             title: "Service",
             image: UIImage(systemName: "wrench"),
             tag: 1
         )
+
 
         let profileVC = ProfileViewController()
         let profileNav = UINavigationController(rootViewController: profileVC)

@@ -9,7 +9,7 @@ import Foundation
 
 struct Service: Identifiable, Equatable {
     let id: String
-
+    let documentPath: String?
     var title: String
     var vehicleName: String
     var cost: Double
@@ -20,6 +20,7 @@ struct Service: Identifiable, Equatable {
 
     init(
         id: String = UUID().uuidString,
+        documentPath: String? = nil,
         title: String,
         vehicleName: String,
         cost: Double,
@@ -29,6 +30,7 @@ struct Service: Identifiable, Equatable {
         createdAt: Date = Date()
     ) {
         self.id = id
+        self.documentPath = documentPath
         self.title = title
         self.vehicleName = vehicleName
         self.cost = cost

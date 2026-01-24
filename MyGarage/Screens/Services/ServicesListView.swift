@@ -6,20 +6,35 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct ServicesListView: View {
 
     @StateObject var viewModel: ServicesViewModel
-    let onAddTapped: () -> Void
 
-    @State private var path = NavigationPath()
+    @State private var showAddService = false
+    @State private var editingService: Service? = nil
+    @State private var showDeleteAlert = false
+    @State private var serviceToDelete: Service? = nil
+
+    private let provider: ServicesDataProvider
+    private let vehicles: [Vehicle]
+
+    init(viewModel: ServicesViewModel, provider: ServicesDataProvider, vehicles: [Vehicle]) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.provider = provider
+        self.vehicles = vehicles
+    }
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             contentView
+                .navigationTitle("Services")
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: onAddTapped) {
+                        Button {
+                            showAddService = true
+                        } label: {
                             Image(systemName: "plus")
                                 .font(.system(size: 18, weight: .semibold))
                         }
@@ -27,8 +42,39 @@ struct ServicesListView: View {
                 }
                 .onAppear { viewModel.start() }
                 .onDisappear { viewModel.stop() }
+
+                .sheet(isPresented: $showAddService) {
+                    ServiceFormView(
+                        mode: .add,
+                        provider: provider,
+                        vehicles: vehicles
+                    )
+                }
+
+                .sheet(item: $editingService) { service in
+                    ServiceFormView(
+                        mode: .edit(service),
+                        provider: provider,
+                        vehicles: vehicles
+                    )
+                }
+
+                .alert("Delete service?", isPresented: $showDeleteAlert) {
+                    Button("Delete", role: .destructive) {
+                        Task {
+                            await deleteService()
+                        }
+                    }
+                    Button("Cancel", role: .cancel) {
+                        serviceToDelete = nil
+                    }
+                } message: {
+                    Text("This action cannot be undone.")
+                }
         }
     }
+
+    // MARK: Content
 
     @ViewBuilder
     private var contentView: some View {
@@ -45,9 +91,10 @@ struct ServicesListView: View {
                     .opacity(0.6)
 
                 Text("No services")
-                    .font(.headline)
 
-                Button("Add Service", action: onAddTapped)
+                Button("Add Service") {
+                    showAddService = true
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -55,62 +102,42 @@ struct ServicesListView: View {
             VStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle")
                     .font(.system(size: 40))
-
                 Text(message)
-                    .multilineTextAlignment(.center)
-
                 Button("Retry") { viewModel.start() }
             }
             .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
         case .loaded:
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    ServicesStatsView(
-                                 totalServices: viewModel.totalServices,
-                                 totalSpent: viewModel.totalSpent
-                             )
-                             .padding(.horizontal, 16)
-                             .padding(.top, 8)
-
-                    
-                    Text("Recent Services")
-                        .font(.headline)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
-
-                    LazyVStack(spacing: 14) {
-                        ForEach(viewModel.services) { service in
-                            serviceCard(service)
-                                .padding(.horizontal, 16)
-                        }
+                LazyVStack(spacing: 14) {
+                    ForEach(viewModel.services) { service in
+                        serviceCard(service)
+                            .padding(.horizontal, 16)
                     }
-                    .padding(.bottom, 24)
                 }
+                .padding(.vertical, 16)
             }
         }
     }
 
+    // MARK: Card
+
     private func serviceCard(_ service: Service) -> some View {
         VStack(alignment: .leading, spacing: 12) {
 
-            HStack(alignment: .top, spacing: 12) {
+            HStack(spacing: 12) {
 
                 ZStack {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: 14)
                         .fill(Color.blue.opacity(0.12))
+                        .frame(width: 44, height: 44)
 
                     Image(systemName: service.iconName ?? "wrench.and.screwdriver")
-                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(.blue)
                 }
-                .frame(width: 44, height: 44)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(service.title)
-                        .font(.headline)
-
+                    Text(service.title).font(.headline)
                     Text(service.vehicleName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -118,57 +145,77 @@ struct ServicesListView: View {
 
                 Spacer()
 
-                Text(service.cost.asCurrencyUSD())
-                    .font(.headline)
-                    .foregroundStyle(.green)
+                Text(
+                    NumberFormatter.localizedString(
+                        from: NSNumber(value: service.cost),
+                        number: .currency
+                    )
+                )
+                .foregroundStyle(.green)
+
+                HStack(spacing: 10) {
+                    Button {
+                        editingService = service
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+
+                    Button {
+                        serviceToDelete = service
+                        showDeleteAlert = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.red)
+                    }
+                }
+                .buttonStyle(.plain)
             }
 
             Divider().opacity(0.4)
 
-            HStack(spacing: 14) {
-                Label(service.serviceDate.asShortDate(), systemImage: "calendar")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            HStack {
+                Label(
+                    DateFormatter.localizedString(
+                        from: service.serviceDate,
+                        dateStyle: .medium,
+                        timeStyle: .none
+                    ),
+                    systemImage: "calendar"
+                )
 
                 Spacer()
 
-                Label(service.mileage.asMilesString(), systemImage: "speedometer")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text("\(service.mileage) mi")
             }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
         }
         .padding(16)
         .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(radius: 10, y: 5)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
-}
 
-// MARK: - Helpers
+    // MARK:  Delete
 
-private extension Double {
-    func asCurrencyUSD() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "Gel"
-        return formatter.string(from: NSNumber(value: self)) ?? "\(self)"
+    private func deleteService() async {
+        guard let service = serviceToDelete else {
+            return
+        }
+
+        guard let userId = Auth.auth().currentUser?.uid else {
+            serviceToDelete = nil
+            return
+        }
+        
+        do {
+            try await provider.deleteService(userId: userId, serviceId: service.id)
+            serviceToDelete = nil
+            showDeleteAlert = false
+        } catch {
+            serviceToDelete = nil
+            showDeleteAlert = false
+        }
     }
-}
 
-private extension Int {
-    func asMilesString() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        let formatted = formatter.string(from: NSNumber(value: self)) ?? "\(self)"
-        return "\(formatted) mi"
-    }
-}
 
-private extension Date {
-    func asShortDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter.string(from: self)
-    }
 }

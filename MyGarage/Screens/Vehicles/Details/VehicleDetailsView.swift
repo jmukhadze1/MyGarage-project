@@ -10,8 +10,13 @@ import SwiftUI
 struct VehicleDetailsView: View {
     @StateObject private var viewModel: VehicleDetailsViewModel
 
-    init(vehicle: Vehicle) {
-        _viewModel = StateObject(wrappedValue: VehicleDetailsViewModel(vehicle: vehicle))
+    init(vehicle: Vehicle, servicesProvider: ServicesDataProvider) {
+        _viewModel = StateObject(
+            wrappedValue: VehicleDetailsViewModel(
+                vehicle: vehicle,
+                servicesProvider: servicesProvider
+            )
+        )
     }
 
     var body: some View {
@@ -35,6 +40,50 @@ struct VehicleDetailsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
+                VStack(spacing: 12) {
+
+                    if viewModel.recentServices.isEmpty {
+                        Text("No services for this vehicle yet.")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 16)
+                    } else {
+                        ForEach(viewModel.recentServices) { service in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(service.title)
+                                        .font(.system(size: 16, weight: .semibold))
+
+                                    Text(
+                                        DateFormatter.localizedString(
+                                            from: service.serviceDate,
+                                            dateStyle: .medium,
+                                            timeStyle: .none
+                                        )
+                                    )
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+
+                                Text(
+                                    NumberFormatter.localizedString(
+                                        from: NSNumber(value: service.cost),
+                                        number: .currency
+                                    )
+                                )
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.green)
+                            }
+                            .padding(14)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .padding(.horizontal, 16)
+                        }
+                    }
+                }
+
 
                 Spacer(minLength: 16)
             }
@@ -42,11 +91,19 @@ struct VehicleDetailsView: View {
         }
         .navigationTitle("Vehicle Details")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            viewModel.start()
+        }
+        .onDisappear {
+            viewModel.stop()
+        }
+
     }
+    
 }
 
 
-// MARK:Components
+// MARK: Components
 
 private struct VehicleImage: View {
     let imageURL: String?

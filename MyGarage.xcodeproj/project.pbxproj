@@ -22,6 +22,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Models/Untitled.swift,
 			);
 			target = 63B44D532F147DF300D4BFA8 /* MyGarage */;
 		};

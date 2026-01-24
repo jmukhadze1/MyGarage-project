@@ -49,7 +49,10 @@ struct VehiclesListView: View {
                 }
                 .navigationDestination(for: String.self) { vehicleId in
                     if let vehicle = viewModel.vehicles.first(where: { $0.id == vehicleId }) {
-                        VehicleDetailsView(vehicle: vehicle)
+                        VehicleDetailsView(
+                            vehicle: vehicle,
+                            servicesProvider: FirestoreServicesManager()
+                        )
                     } else {
                         Text("Vehicle not found")
                     }

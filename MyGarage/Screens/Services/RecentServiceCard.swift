@@ -14,7 +14,16 @@ struct RecentServiceCard: View {
         VStack(alignment: .leading, spacing: 12) {
 
             HStack(alignment: .top, spacing: 12) {
-                iconBox
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemBlue).opacity(0.12))
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: item.iconName ?? "wrench.and.screwdriver")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.blue)
+                }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.title)
@@ -27,16 +36,28 @@ struct RecentServiceCard: View {
 
                 Spacer()
 
-                Text(price(item.cost))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(.systemGreen))
+                Text(
+                    NumberFormatter.currencyGEL.string(from: NSNumber(value: item.cost)) ?? ""
+                )
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color(.systemGreen))
             }
 
             Divider().opacity(0.4)
 
             HStack(spacing: 16) {
-                infoChip(icon: "calendar", text: date(item.serviceDate))
-                infoChip(icon: "speedometer", text: "\(item.mileage) mi")
+
+                HStack(spacing: 6) {
+                    Image(systemName: "calendar")
+                    Text(
+                        DateFormatter.mediumDate.string(from: item.serviceDate)
+                    )
+                }
+
+                HStack(spacing: 6) {
+                    Image(systemName: "speedometer")
+                    Text("\(item.mileage) mi")
+                }
             }
             .font(.system(size: 13))
             .foregroundStyle(.secondary)
@@ -45,35 +66,22 @@ struct RecentServiceCard: View {
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
+}
 
-    private var iconBox: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemBlue).opacity(0.12))
-                .frame(width: 20, height: 20)
+private extension NumberFormatter {
+    static let currencyGEL: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "GEL"
+        return formatter
+    }()
+}
 
-            Image(systemName: "wrench.and.screwdriver")
-                .font(.system(size: 16, weight: .semibold))
-        }
-    }
-
-    private func infoChip(icon: String, text: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-            Text(text)
-        }
-    }
-
-    private func date(_ d: Date) -> String {
-        let dateFormat = DateFormatter()
-        dateFormat.dateStyle = .medium
-        return dateFormat.string(from: d)
-    }
-
-    private func price(_ value: Double) -> String {
-        let numFormat = NumberFormatter()
-        numFormat.numberStyle = .currency
-        numFormat.currencyCode = "Gel"
-        return numFormat.string(from: NSNumber(value: value)) ?? ""
-    }
+private extension DateFormatter {
+    static let mediumDate: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
 }
