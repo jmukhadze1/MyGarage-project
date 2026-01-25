@@ -23,11 +23,14 @@ struct VehiclesListView: View {
     var body: some View {
         NavigationStack(path: $path) {
             contentView
+                .navigationTitle("")
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: onAddTapped) {
                             Image(systemName: "plus")
                                 .font(.system(size: 18, weight: .semibold))
+                            
                         }
                     }
                 }
@@ -100,20 +103,27 @@ struct VehiclesListView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             
         case .loaded:
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(viewModel.vehicles) { vehicle in
-                        vehicleCard(vehicle)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                path.append(vehicle.id)
-                            }
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 12) {
+
+                    Text("My Garage")
+                        .font(.largeTitle.bold())
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+
+                    LazyVStack(spacing: 16) {
+                        ForEach(viewModel.vehicles) { vehicle in
+                            vehicleCard(vehicle)
+                                .contentShape(Rectangle())
+                                .onTapGesture { path.append(vehicle.id) }
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
             }
+
+            
         }
     }
     
