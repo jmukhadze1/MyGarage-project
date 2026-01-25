@@ -58,7 +58,7 @@ final class VehicleFormViewController: UIViewController, UIImagePickerController
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Save",
-            style: .prominent,
+            style: .done,
             target: self,
             action: #selector(saveTapped)
         )

@@ -52,4 +52,4 @@ SwiftUI views are embedded into UIKit using `UIHostingController`.
 ## Setup
 1. Open `MyGarage.xcodeproj`
 2. Add `GoogleService-Info.plist`
-3. Run the app on an iOS 17+ simulator
+3. Run the app on an iOS 17 + simulator
