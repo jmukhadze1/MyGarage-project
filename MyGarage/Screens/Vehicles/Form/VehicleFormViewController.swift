@@ -90,11 +90,11 @@ final class VehicleFormViewController: UIViewController, UIImagePickerController
     }
 
     private func configurePhotoUI() {
-        photoPreviewImageView.backgroundColor = UIColor.systemGray6
+        photoPreviewImageView.backgroundColor = UIColor.secondarySystemBackground
         photoPreviewImageView.clipsToBounds = true
         photoPreviewImageView.layer.cornerRadius = 12
         photoPreviewImageView.contentMode = .center
-        photoPreviewImageView.tintColor = .systemGray3
+        photoPreviewImageView.tintColor = .secondaryLabel
         photoPreviewImageView.image = UIImage(systemName: "photo")
 
         photoPreviewImageView.height(190)

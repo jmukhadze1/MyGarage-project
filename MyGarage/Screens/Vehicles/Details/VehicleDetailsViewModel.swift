@@ -5,34 +5,6 @@
 //  Created by David on 21.01.26.
 //
 
-//import Foundation
-//import Combine
-//
-//@MainActor
-//final class VehicleDetailsViewModel: ObservableObject {
-//
-//    @Published private(set) var vehicle: Vehicle
-//
-//    init(vehicle: Vehicle) {
-//        self.vehicle = vehicle
-//    }
-//
-//    var title: String { "\(vehicle.make) \(vehicle.model)" }
-//    var yearText: String { "\(vehicle.year)" }
-//    var mileageText: String { "\(formatNumber(vehicle.mileage)) miles" }
-//    var lastServiceText: String { "—" }
-//    var imageURLString: String? { vehicle.imageURL }
-//
-//    private func formatNumber(_ value: Int) -> String {
-//        let numformat = NumberFormatter()
-//        numformat.numberStyle = .decimal
-//        return numformat.string(from: NSNumber(value: value)) ?? "\(value)"
-//    }
-//}
-
-
-
-
 import Foundation
 import FirebaseAuth
 import Combine
@@ -98,9 +70,9 @@ final class VehicleDetailsViewModel: ObservableObject {
 
 private extension Date {
     func asShortDate() -> String {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .none
-        return f.string(from: self)
+        let dateFormat = DateFormatter()
+        dateFormat.dateStyle = .medium
+        dateFormat.timeStyle = .none
+        return dateFormat.string(from: self)
     }
 }

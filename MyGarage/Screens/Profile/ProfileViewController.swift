@@ -16,11 +16,7 @@ final class ProfileViewController: UIViewController {
         title = "Profile"
         view.backgroundColor = .systemBackground
 
-        let swiftUIView = ProfileView(
-            onLogout: { [weak self] in
-                self?.logout()
-            }
-        )
+        let swiftUIView = ProfileView()
 
         let host = UIHostingController(rootView: swiftUIView)
         addChild(host)
@@ -36,8 +32,28 @@ final class ProfileViewController: UIViewController {
         ])
 
         host.didMove(toParent: self)
+        
+        applyTheme()
+        
+        NotificationCenter.default.addObserver(
+                  self,
+                  selector: #selector(themeChanged),
+                  name: .appThemeDidChange,
+                  object: nil
+              )
+    }
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .appThemeDidChange, object: nil)
     }
 
+    @objc private func themeChanged() {
+        applyTheme()
+    }
+
+    private func applyTheme() {
+        let theme = UserDefaults.standard.string(forKey: "appTheme") ?? "light"
+        overrideUserInterfaceStyle = (theme == "dark") ? .dark : .light
+    }
     private func logout() {
         try? Auth.auth().signOut()
     }

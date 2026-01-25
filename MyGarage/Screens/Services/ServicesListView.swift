@@ -109,14 +109,31 @@ struct ServicesListView: View {
 
         case .loaded:
             ScrollView {
-                LazyVStack(spacing: 14) {
-                    ForEach(viewModel.services) { service in
-                        serviceCard(service)
-                            .padding(.horizontal, 16)
+                VStack(alignment: .leading, spacing: 12) {
+
+                    ServicesStatsView(
+                        totalServices: viewModel.totalServices,
+                        totalSpent: viewModel.totalSpent
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
+                    Text("Recent Services")
+                        .font(.headline)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+
+                    LazyVStack(spacing: 14) {
+                        ForEach(viewModel.services) { service in
+                            serviceCard(service)
+                                .padding(.horizontal, 16)
+                        }
                     }
+                    .padding(.bottom, 24)
                 }
-                .padding(.vertical, 16)
+                .padding(.top, 8)
             }
+
         }
     }
 
